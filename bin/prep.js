@@ -44,7 +44,7 @@ async function main() {
     await output(
         pipe(
             sortDataByDate.bind(null, DATE_CELL),
-            normalizeData
+            prepareData
         )(data)
     );
 }
@@ -85,8 +85,10 @@ function sortDataByDate(dateKey, data) {
     return data.sort((a, b) => new Date(a[dateKey]) - new Date(b[dateKey]));
 }
 
-function normalizeData(data) {
+function prepareData(data) {
     return pipe(
+        percentagesChangeInVolume,
+        percentagesChangeInPrices,
         ...movingAverages()
     )(data);
 }
@@ -115,6 +117,7 @@ const movingAverage = multiplier => data => data.map((row, i) => {
 });
 
 const DEFAULT_MOVING_AVERAGES = [5, 50, 100, 200];
+
 function movingAverages() {
     const args = mri(process.argv.slice(2), {
         string: ['moving-averages']
@@ -123,6 +126,39 @@ function movingAverages() {
     const movingAverageLengths = formatInputtedMovingAverages(args['moving-averages']) || DEFAULT_MOVING_AVERAGES;
 
     return movingAverageLengths.map(len => movingAverage(len));
+}
+
+function percentagesChangeInVolume(data) {
+    const volumeKey = 'Volume';
+    return data.map((row, i) => {
+        let change;
+        if ((i - 1 >= 0) && row[volumeKey] !== NOT_APPLICABLE && data[i - 1][volumeKey] !== NOT_APPLICABLE) {
+            const oldVolume = Number.parseFloat(data[i - 1][volumeKey].replace(/,/g, ''));
+            const newVolume = Number.parseFloat(row[volumeKey].replace(/,/g, ''));
+            change = (newVolume - oldVolume) / oldVolume * 100;
+        } else {
+            change = '-';
+        }
+        return Object.assign(row, { ['Daily Change in Volume']: change });
+    })
+}
+
+function percentagesChangeInPrices(data) {
+    const priceKeys = ['Open', 'High', 'Low', 'Close'];
+    return data.map((row, i) => Object.assign(
+        row,
+        priceKeys.reduce((accum, key) => {
+            let change;
+            if ((i - 1 > 0) && row[key] !== NOT_APPLICABLE && data[i - 1][key] !== NOT_APPLICABLE) {
+                const oldValue = Number.parseFloat(data[i - 1][key].replace(/,/g, ''));
+                const newValue = Number.parseFloat(row[key].replace(/,/g, ''));
+                change = (newValue - oldValue) / oldValue * 100;
+            } else {
+                change = '-';
+            }
+            return Object.assign(accum, { [`${key} - Daily Percentage Change`]: change });
+        }, {})
+    ));
 }
 
 function formatInputtedMovingAverages(avgsString) {
