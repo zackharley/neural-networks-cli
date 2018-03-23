@@ -10,7 +10,7 @@ npm install -g nn-project
 ## Usage
 
 ```
-  normalize [options] <path | file>
+  prep [options] <path | file>
   
     path | file             A path to a CSV or a CSV filename to load into the normalizer
     
@@ -24,29 +24,29 @@ npm install -g nn-project
     
   Examples:
   
-  - Normalize a CSV referenced by a relative path
+  - Prepare a CSV referenced by a relative path
   
-    $ normalize my-data.csv
+    $ prep my-data.csv
     
-  - Normalize a CSV referenced by a relative path
+  - Prepare a CSV referenced by a relative path
   
-    $ normalize /Users/Me/Documents/my-data.csv
+    $ prep /Users/Me/Documents/my-data.csv
     
   - Specify output to be JSON
   
-    $ normalize --json my-data.csv
+    $ prep --json my-data.csv
     
   - Specify an output path
   
-    $ normalize -o my-normalized-data.csv my-data.csv
+    $ prep -o my-normalized-data.csv my-data.csv
     
     or
     
-    $ normalize --output="/Users/Me/Documents/my-normalized-data.csv" my-data.csv
+    $ prep --output="/Users/Me/Documents/my-normalized-data.csv" my-data.csv
   
   - Specify custom moving averages
   
-    $ normalize --moving-averages="2,3,4,5" my-data.csv
+    $ prep --moving-averages="2,3,4,5" my-data.csv
  
 ```
 
